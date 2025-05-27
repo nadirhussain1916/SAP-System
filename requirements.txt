@@ -6,3 +6,5 @@ langchain
 langchain-openai
 langchain-experimental
 pandasai
+flask-cors
+psycopg2-binary

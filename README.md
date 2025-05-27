@@ -1,45 +1,36 @@
 # SAP Project
 
-This project is a Python application for working with SAP logs and data, using pandas and other libraries. The main entry point is `app.py`.
+A Python application for working with SAP logs and data.
 
-## Setup Instructions
+## Quick Start
 
-### 1. Clone the Repository
-```
-git clone <your-repo-url>
-cd <repo-folder>
-```
+1. **Clone the repository**
+   ```
+   git clone <your-repo-url>
+   cd <repo-folder>
+   ```
 
-### 2. Create a Virtual Environment (Recommended)
-```
-python -m venv venv
-.\venv\Scripts\activate
-```
+2. **Create and activate a virtual environment**
+   ```
+   python -m venv venv
+   .\venv\Scripts\activate
+   ```
 
-### 3. Install Dependencies
-```
-pip install -r requirements.txt
-```
+3. **Install dependencies**
+   ```
+   pip install -r requirements.txt
+   ```
 
-### 4. Set Up Environment Variables (Optional)
-- Create a `.env` file in the project root if needed for secrets or configuration.
+4. **Set up environment variables**
+   - Copy or edit the `.env` file in the project root as needed.
 
-### 5. Run the Application
-```
-python app.py
-```
-
-## Testing
-- Ensure your environment is activated.
-- Run the main file:
-```
-python app.py
-```
-- Check the output and logs for results.
+5. **Run the project**
+   ```
+   python assistant.py
+   ```
 
 ## Project Structure
-- `app.py` - Main entry point
-- `lang.py`, `main.py`, `pandas_ai_script.py` - Supporting modules
+- `assistant.py` - Main entry point
 - `sap_logs.xlsx` - Example data
 - `templates/` - HTML templates
 

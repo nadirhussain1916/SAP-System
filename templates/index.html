@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAP Data Query Interface</title>
+    <title>SAP System Assistant</title>
     <style>
         * {
             margin: 0;
@@ -12,82 +12,85 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             padding: 20px;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+        .chat-container {
+            background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 1000px;
-            height: 80vh;
+            max-width: 800px;
+            height: 90vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        .chat-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
-            padding: 25px 30px;
+            padding: 20px;
             text-align: center;
             position: relative;
         }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 700;
+        .chat-header h1 {
+            font-size: 24px;
             margin-bottom: 5px;
         }
 
-        .header p {
+        .chat-header p {
             opacity: 0.9;
-            font-size: 1rem;
+            font-size: 14px;
         }
 
-        .thread-info {
+        .status-indicator {
             position: absolute;
-            top: 15px;
+            top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            backdrop-filter: blur(5px);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #27ae60;
+            animation: pulse 2s infinite;
         }
 
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
-        .messages {
+        .status-indicator.offline {
+            background: #e74c3c;
+            animation: none;
+        }
+
+        .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: #f8f9ff;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .message {
-            margin-bottom: 20px;
+            max-width: 80%;
             animation: slideIn 0.3s ease-out;
         }
 
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
             to {
                 opacity: 1;
@@ -96,437 +99,441 @@
         }
 
         .message.user {
-            text-align: right;
+            align-self: flex-end;
         }
 
         .message.assistant {
-            text-align: left;
+            align-self: flex-start;
         }
 
         .message-content {
-            display: inline-block;
-            max-width: 80%;
             padding: 15px 20px;
             border-radius: 20px;
-            word-wrap: break-word;
-            position: relative;
+            font-size: 14px;
+            line-height: 1.5;
         }
 
-        .user .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border-bottom-right-radius: 5px;
         }
 
-        .assistant .message-content {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e6ff;
+        .message.assistant .message-content {
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 1px solid #e9ecef;
             border-bottom-left-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        .message-meta {
-            font-size: 0.75rem;
-            opacity: 0.7;
+        .message-time {
+            font-size: 11px;
+            opacity: 0.6;
             margin-top: 5px;
+            text-align: right;
+        }
+
+        .message.assistant .message-time {
+            text-align: left;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            border: 1px solid #e9ecef;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            background: white;
         }
 
         .input-container {
-            padding: 20px 30px;
-            background: white;
-            border-top: 1px solid #e0e6ff;
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: flex-end;
         }
 
-        .input-wrapper {
+        .message-input {
             flex: 1;
-            position: relative;
-        }
-
-        #queryInput {
-            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            padding: 15px 20px;
+            font-size: 14px;
+            outline: none;
+            resize: none;
             min-height: 50px;
             max-height: 120px;
-            padding: 15px 20px;
-            border: 2px solid #e0e6ff;
-            border-radius: 25px;
-            font-size: 1rem;
-            resize: none;
-            outline: none;
-            transition: all 0.3s ease;
             font-family: inherit;
+            transition: all 0.3s ease;
         }
 
-        #queryInput:focus {
+        .message-input:focus {
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        #queryInput::placeholder {
-            color: #aaa;
-        }
-
-        #sendBtn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 50%;
+        .send-button {
             width: 50px;
             height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 18px;
             cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
-        #sendBtn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
-        #sendBtn:disabled {
-            opacity: 0.6;
+        .send-button:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .loading {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #667eea;
-            font-style: italic;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e0e6ff;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
-            color: white;
-            padding: 15px 20px;
+        .welcome-message {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+            border: 2px dashed #ddd;
             border-radius: 15px;
+            margin: 20px;
+        }
+
+        .welcome-message h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
             margin: 10px 20px;
-            animation: shake 0.5s ease-in-out;
+            font-size: 14px;
         }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .agent-badge {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            margin-bottom: 5px;
-        }
-
-        .warning-badge {
-            background: #ffa726;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            margin-bottom: 5px;
-        }
-
-        .new-thread-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-        }
-
-        .new-thread-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
-
+        /* Responsive design */
         @media (max-width: 768px) {
-            .container {
+            body {
+                padding: 10px;
+            }
+            
+            .chat-container {
                 height: 95vh;
-                border-radius: 0;
+                border-radius: 15px;
             }
             
-            .header {
-                padding: 20px;
+            .chat-header {
+                padding: 15px;
             }
             
-            .header h1 {
-                font-size: 1.5rem;
+            .chat-header h1 {
+                font-size: 20px;
             }
             
-            .thread-info, .new-thread-btn {
-                display: none;
-            }
-            
-            .input-container {
-                padding: 15px 20px;
-            }
-            
-            .message-content {
+            .message {
                 max-width: 90%;
             }
+            
+            .chat-input {
+                padding: 15px;
+            }
         }
 
-        /* Custom scrollbar */
-        .messages::-webkit-scrollbar {
+        /* Scrollbar styling */
+        .chat-messages::-webkit-scrollbar {
             width: 6px;
         }
 
-        .messages::-webkit-scrollbar-track {
+        .chat-messages::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
 
-        .messages::-webkit-scrollbar-thumb {
+        .chat-messages::-webkit-scrollbar-thumb {
             background: #c1c1c1;
             border-radius: 10px;
         }
 
-        .messages::-webkit-scrollbar-thumb:hover {
-            background: #a8a8a8;
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>SAP Data Query Interface</h1>
-            <p>Ask questions about your data using natural language</p>
-            <div class="thread-info">
-                Thread: <span id="threadId">Loading...</span>
-            </div>
-            <button class="new-thread-btn" onclick="startNewThread()">New Thread</button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <h1>SAP System Assistant</h1>
+            <p>Ask me about your SAP system performance, logs, and analytics</p>
         </div>
         
-        <div class="chat-container">
-            <div class="messages" id="messages">
-                <div class="message assistant">
-                    <div class="message-content">
-                        Welcome! I'm ready to help you analyze your SAP data. You can ask questions like:
-                        <br><br>
-                        • "Show me the top 10 errors from last week"
-                        • "What are the most common transaction types?"
-                        • "Analyze user login patterns"
-                        • "Show me system performance metrics"
-                        <br><br>
-                        Just type your question below and I'll analyze the data for you!
-                    </div>
-                </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h3>👋 Welcome to SAP Assistant!</h3>
+                <p>I can help you analyze SAP system performance, query logs, identify bottlenecks, and provide optimization recommendations. Just ask me anything about your SAP system!</p>
             </div>
-            
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
             <div class="input-container">
-                <div class="input-wrapper">
-                    <textarea 
-                        id="queryInput" 
-                        placeholder="Ask a question about your data..."
-                        rows="1"
-                        onkeydown="handleKeyDown(event)"
-                        oninput="autoResize(this)"
-                    ></textarea>
-                </div>
-                <button id="sendBtn" onclick="sendQuery()" disabled>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
-                    </svg>
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Ask about SAP performance, user activity, system bottlenecks..."
+                    rows="1"
+                ></textarea>
+                <button id="sendButton" class="send-button" title="Send message">
+                    ➤
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentThreadId = null;
-        let isLoading = false;
-
-        // Initialize thread on page load
-        window.onload = function() {
-            initializeThread();
-        };
-
-        function initializeThread() {
-            currentThreadId = generateThreadId();
-            document.getElementById('threadId').textContent = currentThreadId;
-        }
-
-        function generateThreadId() {
-            return 'thread_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        }
-
-        function startNewThread() {
-            currentThreadId = generateThreadId();
-            document.getElementById('threadId').textContent = currentThreadId;
-            
-            // Clear messages except welcome message
-            const messagesContainer = document.getElementById('messages');
-            const welcomeMessage = messagesContainer.firstElementChild;
-            messagesContainer.innerHTML = '';
-            messagesContainer.appendChild(welcomeMessage);
-            
-            // Clear input
-            document.getElementById('queryInput').value = '';
-            autoResize(document.getElementById('queryInput'));
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const queryInput = document.getElementById('queryInput');
-            const sendBtn = document.getElementById('sendBtn');
-            function toggleSendBtn() {
-                sendBtn.disabled = queryInput.value.trim().length === 0;
+        class SAPChatbot {
+            constructor() {
+                this.apiUrl = 'http://localhost:5000'; // Change this to your backend URL
+                this.threadId = this.generateThreadId();
+                this.isLoading = false;
+                
+                this.initializeElements();
+                this.attachEventListeners();
+                this.checkHealth();
+                
+                // Auto-resize textarea
+                this.setupTextareaResize();
             }
-            queryInput.addEventListener('input', toggleSendBtn);
-            toggleSendBtn(); // Set initial state
-        });
-
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendQuery();
+            
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.statusIndicator = document.getElementById('statusIndicator');
             }
-        }
-
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-        }
-
-        async function sendQuery() {
-            if (isLoading) return;
             
-            const queryInput = document.getElementById('queryInput');
-            const query = queryInput.value.trim();
-            
-            if (!query) return;
-            
-            // Add user message
-            addMessage('user', query);
-            
-            // Clear input
-            queryInput.value = '';
-            autoResize(queryInput);
-            
-            // Show loading
-            const loadingElement = addLoadingMessage();
-            isLoading = true;
-            document.getElementById('sendBtn').disabled = true;
-            
-            try {
-                const response = await fetch('/query', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        query: query,
-                        thread_id: currentThreadId
-                    })
+            attachEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
                 });
-                
-                const data = await response.json();
-                
-                // Remove loading message
-                loadingElement.remove();
-                
-                if (data.success) {
-                    addMessage('assistant', data.result, data.agent_used, data.warning);
-                } else {
-                    addErrorMessage(data.error);
+            }
+            
+            setupTextareaResize() {
+                this.messageInput.addEventListener('input', () => {
+                    this.messageInput.style.height = 'auto';
+                    this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
+                });
+            }
+            
+            generateThreadId() {
+                return `thread_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            }
+            
+            async checkHealth() {
+                try {
+                    const response = await fetch(`${this.apiUrl}/health`);
+                    if (response.ok) {
+                        this.statusIndicator.classList.remove('offline');
+                        this.statusIndicator.title = 'Connected to SAP Assistant';
+                    } else {
+                        throw new Error('Health check failed');
+                    }
+                } catch (error) {
+                    console.error('Health check failed:', error);
+                    this.statusIndicator.classList.add('offline');
+                    this.statusIndicator.title = 'Disconnected from SAP Assistant';
+                    this.showError('Unable to connect to SAP Assistant. Please check if the backend is running.');
                 }
+            }
+            
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message || this.isLoading) return;
                 
-            } catch (error) {
-                loadingElement.remove();
-                addErrorMessage('Failed to connect to server: ' + error.message);
+                // Add user message to chat
+                this.addMessage(message, 'user');
+                this.messageInput.value = '';
+                this.messageInput.style.height = 'auto';
+                
+                // Show typing indicator
+                this.showTypingIndicator();
+                this.setLoading(true);
+                
+                try {
+                    const response = await fetch(`${this.apiUrl}/assistant`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            thread_id: this.threadId
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Update thread ID if provided
+                    if (data.thread_id) {
+                        this.threadId = data.thread_id;
+                    }
+                    
+                    // Add assistant response to chat
+                    this.addMessage(data.response, 'assistant');
+                    
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    this.addMessage(
+                        `I apologize, but I encountered an error: ${error.message}. Please make sure the backend is running and try again.`,
+                        'assistant',
+                        true
+                    );
+                } finally {
+                    this.hideTypingIndicator();
+                    this.setLoading(false);
+                }
             }
             
-            isLoading = false;
-            document.getElementById('sendBtn').disabled = false;
-        }
+            addMessage(content, sender, isError = false) {
+                // Remove welcome message if it exists
+                const $welcomeMessage = $(this.chatMessages).find('.welcome-message');
+                if ($welcomeMessage.length) {
+                    $welcomeMessage.remove();
+                }
 
-        function addMessage(sender, content, agentUsed = null, warning = null) {
-            const messagesContainer = document.getElementById('messages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            
-            let badges = '';
-            if (agentUsed) {
-                badges += `<div class="agent-badge">${agentUsed}</div>`;
-            }
-            if (warning) {
-                badges += `<div class="warning-badge">⚠ ${warning}</div>`;
-            }
-            
-            const timestamp = new Date().toLocaleTimeString();
-            
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    ${badges}
-                    ${content.replace(/\n/g, '<br>')}
-                    <div class="message-meta">${timestamp}</div>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(messageDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
+                let messageClass = `message ${sender}`;
+                let messageContentStyle = 'white-space: break-spaces;';
+                if (isError) {
+                    messageContentStyle = 'background:#fee;border-color:#fcc;color:#c33;';
+                }
 
-        function addLoadingMessage() {
-            const messagesContainer = document.getElementById('messages');
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'message assistant';
-            loadingDiv.innerHTML = `
-                <div class="message-content">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Analyzing your query...
+                // Format the content (preserve line breaks and add basic formatting)
+                const formattedContent = this.formatMessage(content);
+
+                const messageHtml = `
+                    <div class="${messageClass}">
+                        <div class="message-content" style="${messageContentStyle}">${formattedContent}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
                     </div>
-                </div>
-            `;
-            
-            messagesContainer.appendChild(loadingDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            return loadingDiv;
-        }
+                `;
 
-        function addErrorMessage(error) {
-            const messagesContainer = document.getElementById('messages');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = 'Error: ' + error;
+                $(this.chatMessages).append(messageHtml);
+                this.scrollToBottom();
+            }
             
-            messagesContainer.appendChild(errorDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            formatMessage(content) {
+                // Basic formatting: escape html tags and preserve line breaks
+                return content
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");;
+            }
+            
+            showTypingIndicator() {
+                this.typingIndicator.style.display = 'block';
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                this.typingIndicator.style.display = 'none';
+            }
+            
+            setLoading(loading) {
+                this.isLoading = loading;
+                this.sendButton.disabled = loading;
+                this.messageInput.disabled = loading;
+                
+                if (loading) {
+                    this.sendButton.innerHTML = '⏳';
+                } else {
+                    this.sendButton.innerHTML = '➤';
+                }
+            }
+            
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                // Insert after header
+                const header = document.querySelector('.chat-header');
+                header.insertAdjacentElement('afterend', errorDiv);
+                
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
+            }
+            
+            scrollToBottom() {
+                requestAnimationFrame(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                });
+            }
         }
-
-        // Auto-focus input on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('queryInput').focus();
+        
+        // Initialize the chatbot when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new SAPChatbot();
         });
     </script>
 </body>
